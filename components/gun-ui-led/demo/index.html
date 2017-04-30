@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>gun-ui-ledbutton</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script>
+      window.Polymer = window.Polymer || {};
+      window.Polymer.dom = 'shadow';
+    </script>
+    <link rel="import" href="../../polymer/polymer.html">
+    <link rel="import" href="../../gunui-demo-app/gunui-demo-app.html">
+    <link rel="import" href="../../gunui-demo-app/demo/demo-imports.html">
+    <link rel="import" href="../gun-ui-led.html">
+    <style is="custom-style" include="demo-shared-styles">
+    .row {height:50px;background-color: #424242;}
+     gun-ui-led { display:inline-block;margin:0 10px; }
+    }
+    </style>
+  </head>
+  <body>
+  <prism-highlighter></prism-highlighter>
+   <style is="custom-style" include="demo-shared-styles">
+    .row {height:50px;background-color: #424242;}
+     gun-ui-led { display:inline-block;margin:0 10px; }
+    }
+    </style>
+
+    <gunui-demo-app>
+      <style is="custom-style">
+
+      </style>
+      <!-- create page -->
+      <div class="vertical-section centered">
+        <h3>gun-ui-led</h3>
+        <blockquote>
+          This is a 'supporting element' so you don't have to install this yourself.
+        </blockquote>
+          <p>By itself it has nothing to do with Gun...but it is used in other <gun-ui></gun-ui>-elements</p>
+
+          <demo-box class="black">
+            <template>
+              <div class="row">
+                <gun-ui-led></gun-ui-led>
+                <gun-ui-led active></gun-ui-led>
+                <gun-ui-led active color="green"></gun-ui-led>
+                <gun-ui-led active color="red"></gun-ui-led>
+                <gun-ui-led active color="yellow"></gun-ui-led>
+                <gun-ui-led active color="blue"></gun-ui-led>
+                <gun-ui-led active color="orange"></gun-ui-led>
+              </div>
+              <div class="row">
+                <gun-ui-led></gun-ui-led>
+                <gun-ui-led active blink></gun-ui-led>
+                <gun-ui-led active color="green" blink></gun-ui-led>
+                <gun-ui-led active color="red" blink></gun-ui-led>
+                <gun-ui-led active color="yellow" blink></gun-ui-led>
+                <gun-ui-led active color="blue" blink></gun-ui-led>
+                <gun-ui-led active color="orange" blink></gun-ui-led>
+              </div>
+            </template>
+          </demo-box>
+      </div>
+
+    </gunui-demo-app>
+  </body>
+</html>

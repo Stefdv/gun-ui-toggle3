@@ -1,0 +1,37 @@
+{
+  "name": "gun-ui-mixin",
+  "main": "gun-ui-mixin.html",
+  "authors": [
+    "Stef de Vries <stefdv2@hotmail.com>"
+  ],
+  "description": "Main element for GunUi. Part of the 'gun-ui-' library",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "Gun",
+    "GunDb",
+    "GunUi",
+    "DataViz",
+    "gun-ui"
+  ],
+  "license": "http://www.gnu.org/licenses/gpl-3.0.en.html",
+  "ignore": [
+    "/.*",
+    "/test/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.4.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
+    "web-component-tester": "^4.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
+    "paper-drawer-panel": "PolymerElements/paper-drawer-panel#^1.0.11",
+    "paper-header-panel": "PolymerElements/paper-header-panel#^1.1.7",
+    "paper-menu": "PolymerElements/paper-menu#^1.3.0",
+    "paper-item": "PolymerElements/paper-item#^1.2.2",
+    "gunui-demo-app": "Stefdv/gunui-demo-app"
+  }
+}

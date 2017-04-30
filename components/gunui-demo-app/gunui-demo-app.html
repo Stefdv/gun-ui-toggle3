@@ -1,0 +1,168 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="demo/demo-imports.html">
+<!--
+`gunui-demo-app`
+Main documentation for GunUi
+This will be loaded by individual elements!
+@demo demo/index.html
+-->
+<!-- 
+  data-url should point to the elements demo 
+  at https://stefdv.github.io/gun-ui-<element>/components/gun-ui-<element>/
+  which - in turn -  should point to 'demo/index.html'
+-->
+<dom-module id="gunui-demo-app">
+  <template>
+    <style>
+      :host { display: block;}
+      paper-menu hr { border-bottom-color:rgba(240,240,240);border-top:0px;}
+      iron-icon {
+        padding-right: 10px;
+        width: 34px;
+      }
+      paper-item {
+        font-size: 12px;
+        line-height: 12px;
+        cursor: pointer;
+      }
+      paper-item.indent{
+        margin-left: 20px;
+      }
+      paper-item.unindent{
+        margin-left: 0px;
+      }
+      .menu-content{
+        padding-left: 10px;
+      }
+    </style>
+   	<paper-drawer-panel>
+    	<paper-header-panel drawer>
+      	<paper-toolbar>Menu</paper-toolbar>
+
+      	<paper-menu id="menu" selected="{{currentUrl}}" attr-for-selected="data-url" on-iron-activate="navigate">
+          <paper-item data-url="../gunui-demo-app/docs/docsmain.html?gunui">GunUi</paper-item> 
+          <paper-item data-url="../gunui-demo-app/docs/docsmain.html?requirements">Requirements</paper-item>  
+          <paper-item data-url="../gunui-demo-app/docs/docsmain.html?applies-to-all">About the elements</paper-item> 
+          <paper-item data-url="../gunui-demo-app/docs/docsmain.html?background">Background</paper-item> 
+          <hr> <!-- helper elements -->      
+          <paper-submenu id="submenu-support">
+            <paper-item class="menu-trigger">
+              <iron-icon icon="menu"></iron-icon>
+              <span>Supporting Elements</span>
+            </paper-item>
+            <paper-menu class="menu-content" selected="{{currentUrl}}" attr-for-selected="data-url" on-iron-activate="navigate">
+              <paper-item data-url="[[demoLinks.mixin.url]]" class="indent"><code>&lt;[[demoLinks.mixin.title]]&gt;</code></paper-item>
+              <paper-item data-url="[[demoLinks.led.url]]" class="indent"><code>&lt;[[demoLinks.led.title]]&gt;</code></paper-item>
+            </paper-menu>
+          </paper-submenu>
+
+          <hr> <!-- prop elements -->      
+          <paper-submenu id="submenu-prop">
+            <paper-item class="menu-trigger">
+              <iron-icon icon="menu"></iron-icon>
+              <span>Prop Elements</span>
+            </paper-item>
+            <paper-menu class="menu-content" selected="{{currentUrl}}" attr-for-selected="data-url" on-iron-activate="navigate">
+              <paper-item data-url="[[demoLinks.checkbox.url]]" class="indent"><code>&lt;[[demoLinks.checkbox.title]]&gt;</code></paper-item>
+              <paper-item data-url="[[demoLinks.input.url]]" class="indent"><code>&lt;[[demoLinks.input.title]]&gt;</code></paper-item>
+              <paper-item data-url="[[demoLinks.ledbutton.url]]" class="indent"><code>&lt;[[demoLinks.ledbutton.title]]&gt;</code></paper-item>
+              <paper-item data-url="[[demoLinks.slider.url]]" class="indent"><code>&lt;[[demoLinks.slider.title]]&gt;</code></paper-item>
+              <paper-item data-url="[[demoLinks.toggle.url]]" class="indent"><code>&lt;[[demoLinks.toggle.title]]&gt;</code></paper-item>
+              <paper-item data-url="[[demoLinks.toggle3.url]]" class="indent"><code>&lt;[[demoLinks.toggle3.title]]&gt;</code></paper-item>
+            </paper-menu>
+          </paper-submenu>
+
+           <hr> <!-- display elements -->      
+          <paper-submenu id="submenu-display">
+            <paper-item class="menu-trigger">
+              <iron-icon icon="menu"></iron-icon>
+              <span>Display Elements</span>
+            </paper-item>
+            <paper-menu class="menu-content" selected="{{currentUrl}}" attr-for-selected="data-url" on-iron-activate="navigate">
+              <paper-item disabled data-url="[[demoLinks.gauge.url]]" class="indent"><code>&lt;[[demoLinks.gauge.title]]&gt;</code></paper-item>
+              <paper-item disabled data-url="[[demoLinks.bargauge.url]]" class="indent"><code>&lt;[[demoLinks.bargauge.title]]&gt;</code></paper-item>
+              <paper-item disabled data-url="[[demoLinks.lcd.url]]" class="indent"><code>&lt;[[demoLinks.lcd.title]]&gt;</code></paper-item>
+            </paper-menu>
+          </paper-submenu>
+
+
+      	</paper-menu>
+      </paper-header-panel>
+
+      <paper-header-panel main>
+      	<paper-toolbar>
+      		<paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+      		<div class="title small">{{title}}</div>
+      	</paper-toolbar>
+
+        <div id="content">
+					<slot></slot>
+				</div>
+
+			</paper-header-panel>
+		</paper-drawer-panel>
+	</template>
+  <script>
+    Polymer({
+
+      is: 'gunui-demo-app',
+
+      properties: {
+       currentUrl: {
+					type: String,
+					value: function(){
+            console.log('currentUrl : ', location.href.replace(this.resolveUrl('..'),''))
+						return location.href.replace(this.resolveUrl('..'),'');
+					}
+				},
+				searchTerm: {
+					type: String,
+					value: '',
+					observer: 'search'
+				},
+        demoLinks:{
+          type:Object,
+          value:{
+            // support
+            mixin:{url:"https://stefdv.github.io/gun-ui-mixin/components/gun-ui-mixin/",title:"gun-ui-mixin"},
+            led:{url:"https://stefdv.github.io/gun-ui-led/components/gun-ui-led/",title:"gun-ui-led"},
+            // prop
+            checkbox:{url:"https://stefdv.github.io/gun-ui-checkbox/components/gun-ui-checkbox/",title:"gun-ui-checkbox"},
+            input:{url:"https://stefdv.github.io/gun-ui-input/components/gun-ui-input/",title:"gun-ui-input"},
+            ledbutton:{url:"https://stefdv.github.io/gun-ui-ledbutton/components/gun-ui-ledbutton/",title:"gun-ui-ledbutton"},
+            slider:{url:"https://stefdv.github.io/gun-ui-slider/components/gun-ui-slider/",title:"gun-ui-slider"},
+            toggle:{url:"https://stefdv.github.io/gun-ui-toggle/components/gun-ui-toggle/",title:"gun-ui-toggle"},
+            toggle3:{url:"https://stefdv.github.io/gun-ui-toggle3/components/gun-ui-toggle3/",title:"gun-ui-toggle3"},
+            // display
+            gauge:{url:"https://stefdv.github.io/gun-ui-gauge/components/gun-ui-gauge/",title:"gun-ui-gauge"},
+            bargauge:{url:"https://stefdv.github.io/gun-ui-bargauge/components/gun-ui-bargauge/",title:"gun-ui-bargauge"},
+            lcd:{url:"https://stefdv.github.io/gun-ui-lcd/components/gun-ui-lcd/",title:"gun-ui-lcd"},
+            
+          }
+        }
+      },
+
+    ready(){
+		  this.title = document.title;
+      document.title += ' - GunUi';
+      var link = document.createElement('link');
+      link.type = 'image/x-icon';
+      link.rel = 'shortcut icon';
+      link.href = this.resolveUrl('./icon.png');
+      document.getElementsByTagName('head')[0].appendChild(link);
+			},
+			navigate(e, detail){
+				console.log(e,detail,detail.item.dataset)
+        if(detail.selected){
+          console.log(this.resolveUrl(detail.selected))
+          location.href = this.resolveUrl(detail.selected);
+        }
+			},
+			search(){
+
+			}
+			
+
+    });
+  </script>
+</dom-module>

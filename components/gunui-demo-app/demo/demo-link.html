@@ -1,0 +1,22 @@
+<dom-module id="demo-link">
+      <template>
+        <style>
+          :host {display: inline-block; }
+        </style>
+        <a href="[[href]]" on-tap="_go"><slot></slot></a>
+      </template>
+      <script>
+        Polymer({
+          is: 'demo-link',
+          properties:{
+            href:{type:String,value:null}
+          },
+          _go(e){
+            e.preventDefault();
+            var url = location.href.split('/components')[0]+ '/components/gunui-demo-app/docs/docsmain.html' + this.href;
+            window.location.href= url
+          }
+
+        });
+      </script>
+    </dom-module>

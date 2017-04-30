@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <script src="https://rawgit.com/amark/gun/master/gun.min.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>gun-ui-ledbutton</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script>
+      window.Polymer = window.Polymer || {};
+      window.Polymer.dom = 'shadow';
+    </script>
+    <link rel="import" href="../../polymer/polymer.html">
+    <link rel="import" href="../../gunui-demo-app/gunui-demo-app.html">
+    <link rel="import" href="../../gunui-demo-app/demo/demo-imports.html">
+    <link rel="import" href="../gun-ui-mixin.html">
+
+    <style is="custom-style" include="demo-shared-styles">
+        :root{ }
+        body{
+            overflow:hidden;
+          }
+    </style>
+      <dom-module id="gun-app">
+        <template>
+          <style>
+            :host {
+              display: block;
+            }
+            .output { border:1px solid grey;padding:5px; }
+          </style>
+           <div class="output">
+              <p>[[output]]</p>
+           </div>
+        </template>
+        <script>
+          Polymer({
+                  is: 'gun-app',
+
+                  properties:{
+                    value:String
+                  },
+
+                  behaviors:[Polymer.GunUiMixin],
+
+                  ready(){
+                    this.addNode();
+                    this.async(function(){
+                      this.getNode()
+                    },200)
+                  },
+                  addNode(){
+                    /* use the method on GunUiMixin */
+                    this._create({soul:this.soul,prop:this.prop,data:this.value});
+                    /* Or use 'this.gun' directly 
+                      this.gun.get(this.soul).path(this.prop).put(this.value)
+                    */
+                  },
+                  getNode(){
+                     /* use the method on GunUiMixin ( returns promise) */
+                      this._read({soul:this.soul,prop:this.prop}).then( (data) => {
+                      this.set('output',data)
+                    })
+                    /* Or use 'this.gun' directly 
+                      this.gun.get(this.soul).path(this.prop).val( (data) => {
+                        this.set('output',data)
+                      })
+                    */ 
+                  }
+                });
+        </script>
+      </dom-module>
+  </head>
+
+
+
+  <body>
+      <prism-highlighter></prism-highlighter>
+      <gunui-demo-app>
+         <div class="vertical-section centered" id="start">
+        <h3>What it is</h3>
+        <blockquote>
+          If you don't know Gundb, please take a look <a href="http://gun.js.org/#step1" target="_blank">here</a>
+        </blockquote>
+        <p><prism-demo inline code="<gun-ui-mixin>" lang="html"></prism-demo> is not a visual element but a dependency for all other <gun-ui></gun-ui> elements.<br>
+        It includes Gun chaining methods and 'wrapper' methods around the Gun API.</p>
+        <p>When creating 'ready-to-use' elements i have to make sure that every element has access to the same methods and properties...Most of all i need to make sure they all have access to Gun itself.</p>
+
+        <p>GunUiMixin is an object that attaches itself to Polymer as a behavior. When this behavior is implemented in other elements the properties and methods on <prism-demo inline code="<gun-ui-mixin>" lang="html"></prism-demo> will be 'mixed' with the properties and methods of the custom element.<br> In other words "they will be native to the element".</p>
+
+        <blockquote>
+          I'm still using Polymer 1.x untill Polymer 2.x is no longer a 'release candidate'. In Polymer 2.x however 'behaviors' will be changed to 'mixins' ( hence the name 'gun-ui-mixin').
+        </blockquote>
+
+
+      </div>
+
+      <div class="vertical-section centered" id="demoapp">
+        <h3>How it works</h3>
+          <blockquote>
+          You never have to install 'gun-ui-mixin' yourself, still i like to show you how it is implemented.
+          </blockquote>
+          <blockquote>
+           In the gun api 'path()' will be (is) deprecated, however <gun-ui></gun-ui> has it's own version of 'path()' included. ( just stole it from gun when it was still there)
+          </blockquote>
+        <div class="vertical-section">
+         <div class="demo-header">
+        
+          <p><prism-demo inline code="<gun-app>" lang="html"></prism-demo> is an element created for this demo<br>
+          It demonstrates how to implement "gun-ui-mixin" as a "Polymer.behavior"</p>
+        </div>
+        <demo-box no-render>
+
+          <template>
+            <link rel="import" href="../bower_components/gun-ui-mixin/gun-ui-mixin.html">
+            <dom-module id="gun-app">
+              <template>
+                <style>
+                  :host {display: block;}
+                  .output { border:1px solid grey;padding:5px; }
+                </style>
+                <div class="output">
+                  <p>[[output]]</p>
+                </div>
+              </template>
+              <script>
+                Polymer({
+                  is: 'gun-app',
+
+                  properties:{
+                    value:String
+                  },
+
+                  behaviors:[Polymer.GunUiMixin],
+
+                  ready(){
+                    this.addNode();
+                    this.async(function(){
+                      this.getNode()
+                    },200)
+                  },
+                  addNode(){
+                    /* use the method on GunUiMixin */
+                    this._create({soul:this.soul,prop:this.prop,data:this.value});
+                    /* Or use 'this.gun' directly 
+                      this.gun.get(this.soul).path(this.prop).put(this.value)
+                    */
+                  },
+                  getNode(){
+                     /* use the method on GunUiMixin ( returns promise) */
+                      this._read({soul:this.soul,prop:this.prop}).then( (data) => {
+                      this.set('output',data)
+                    })
+                    /* Or use 'this.gun' directly 
+                      this.gun.get(this.soul).path(this.prop).val( (data) => {
+                        this.set('output',data)
+                      })
+                    */ 
+                  }
+                });
+              </script>
+            </dom-module>
+          </template>
+        </demo-box>
+       </div>
+      <div class="vertical-section">
+      <div class="demo-header">
+         <blockquote>The <prism-demo inline code="<gun-app>" lang="html"></prism-demo> element has 'soul' and 'prop' properties through <prism-demo inline code="<gun-ui-mixin>" lang="html"></prism-demo>.The 'value' property is created on 'gun-app' itself...it makes no difference to 'gun-app'.</blockquote>
+         <p><prism-demo inline code="<gun-app>" lang="html"></prism-demo> will put the data in Gun, reads it back and presents it in a div...totally useless but it demonstrates how <gun-ui></gun-ui> elements work.</p>
+      </div>
+      <demo-box>
+        <template>
+          <gun-app soul="demo" prop="test1" value="Test 01"></gun-app>
+          <gun-app soul="demo" prop="test2" value="Test 02"></gun-app>
+        </template>
+      </demo-box>
+    </div>
+
+  </div>
+  </gunui-demo-app>
+
+  </body>
+    <script>
+      var app = document.querySelector('#app');
+    </script>
+</html>

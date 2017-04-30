@@ -1,0 +1,538 @@
+  <link rel="import" href="../polymer/polymer.html">
+  <script>
+  var gun;
+  // Don't worry...This only runs once no mather how often you implement gun-ui-mixin
+  (function(){
+
+if (typeof Gun !== 'function') {
+  console.warn('you have to install Gun. ( npm install gun )')
+} else {
+  console.log('Gun loaded')
+  init();
+}
+
+function init(){
+  var _scope = 'guntagger/';
+  var _scopes = '_scopes';
+  var SCOPES = {};
+  
+  function _refreshScopes(gun){
+    gun.back(-1).get(_scope+_scopes)
+      .not(function(){SCOPES={} })
+      .val(function(list){
+        SCOPES = Gun.obj.copy(list);
+     })
+  };
+  Gun.chain.initGuntagger = function(){
+    var gun = this
+    gun.get(_scope+_scopes).put({'ForInit':1},function(){
+      _refreshScopes(gun)
+    });
+  };
+  /* check if it's a valid node */
+  function invalid(value) {
+    if (typeof value !== 'object' || !value._) {
+      console.warn('Only nodes can be tagged');
+      return true;
+    }
+  };
+  /**
+ * When we receive an Array we will pass each entry one by one to the required method
+ * @param  {Object} gun    gun context
+ * @param  {Array}  tags   either an Array or a CSV
+ * @param  {String} method name of the function to return to
+ */
+function serialize(gun,tags,method) {
+  tags = Array.isArray(tags) ? tags : Array.prototype.slice.call(tags);
+  tags.forEach(function (tag) {
+    gun[method](tag);
+  });
+};
+
+// gun.get('guntagger/TAGS').get('books').put({'#':'books/TAGS'})
+function registerScopeToMain(gun,scope){
+  gun.get(_scope+'TAGS').get(scope).put({'#':scope+'/TAGS'}); 
+};
+
+// gun.get('guntagger/_scopes').get('books').put(1) 
+function registerScope(gun,scope){
+  gun.get(_scope+_scopes).get(scope).put(1); 
+  SCOPES[scope] = 1;// update local Scopes ref
+};
+
+function tagToScope(gun,scope,tag,soul){
+  // gun.get('books/TAGS').get('fantasy').put({'#':'books/fantasy'})
+  gun.get(scope+'/TAGS').get(tag).get('#').put(scope+'/'+tag);
+  // gun.get('books/fantasy').get('IT').put({'#':'IT'})
+  gun.get(scope+'/'+tag).get(soul).get('#').put(soul);
+};
+
+Gun.chain.getScope = function() { return _scope.split('/')[0]}
+Gun.chain.setScope = function(newScope){ _scope = newScope+'/'}
+Gun.chain.getScopes = function(){return SCOPES}
+/* --------------- tag ------------------- 
+  gun.tag('TAG1','TAG2') -> serialize() -> gun.tag('TAG1') , gun.tag('TAG2')
+  gun.tag(['TAG1','TAG2']) -> serialize()
+*/
+
+Gun.chain.tag = function (tag) {
+  var root = this.back(-1)
+  if(!tag) { return this;};
+  if (Array.isArray(tag) ) { return serialize(this, tag,'tag');};
+
+  // if we got here we have a single 'string'
+  return this.val(function (node) {
+    if (invalid(node)) {
+      return this;
+    } else { 
+    // register the tag to the main tags -> 'guntagger/TAGS'
+      root.get(_scope+'TAGS').get(tag).put({'#':_scope+tag});
+
+    // register this node to the tag -> 'guntagger/books'   
+      root.get(_scope+tag).get(node._['#']).put({'#':node._['#']});
+
+    // add the tag to the nodes 'tag' property
+      this.get('tags').get(tag).put(1);
+    };
+  });
+};
+
+ /* --------------- scopetag ------------------- 
+    gun.get().tag({scope:'Books',tag:'fantasy'}) 
+    gun.get().tag([{scope:'Books',tag:'fantasy'},{scope:'Books',tag:'horror'}]) -> serialize()
+  */
+Gun.chain.scopetag = function(tag){
+  if(!tag) { return this;}
+  if(Array.isArray(tag)) {
+    if(typeof tag[0] === 'object' && typeof tag[0].scope !== 'undefined' &&  typeof tag[0].tag !== 'undefined'  ){
+    // at least the first entry is {scope:'somescope',tag:'sometag'}
+      return serialize(this,tag,'scopetag');
+    } else {return this;}
+  } else if (typeof tag !== 'object' || !tag.scope || !tag.tag) {
+    console.warn('not a valid scopetag')
+    return this;
+  };
+
+  // if we got here we should have {scope:'books',tag:'fantasy'}
+  var gun = this;
+  var g_root = this.back(-1);
+  return gun.val(function(node){
+    if (invalid(node)) {return this;};
+
+    // if this scope is not yet registered
+    if(!SCOPES[tag.scope]){
+      registerScopeToMain(g_root,tag.scope);
+      registerScope(g_root,tag.scope)
+    };
+
+    tagToScope(g_root,tag.scope,tag.tag,node._['#'])
+      
+    // this.get('tags').get('books/fantasy').put(1);
+    this.get('tags').get(tag.scope+'/'+tag.tag).put(1)
+  });
+};
+
+/* --------------- proptag ------------------- 
+  gun.tag('developer') 
+  gun.tag(['developer','human']) 
+  NOTE: 
+    this will add the tag as a property to the node !!
+    it will still be possible to untag 
+*/
+
+Gun.chain.proptag = function(tag){
+  if(!tag) { return this;}
+  if (arguments.length > 1 || Array.isArray(tag)) {
+    return serialize(this, tag,'proptag');
+  };
+  var gun = this;
+  var root = this.back(-1);
+
+    // if we got here we have a single 'string'
+  return this.val(function (node) {
+    if (invalid(node)) {
+        return this;
+    } else { 
+      // root.get('guntagger/TAGS').get('developers').put({'#':'guntagger/developers'})
+      root.get(_scope+'TAGS').get(tag).put({'#':_scope+tag}); 
+
+      // root.get('guntagger/developers').get('Stefdv').put({'#':'Stefdv'})
+      root.get(_scope+tag).get(node._['#']).put({'#':node._['#']});
+
+      // gun.get('developer').put(true)
+      gun.get(tag).put(true);
+    }
+  });
+};
+
+/* --------------- untag ------------------- 
+  gun.untag('TAG1','TAG2') -> serialize()
+  gun.untag(['TAG1','TAG2']) -> serializeArray()
+*/
+Gun.chain.untag = function (tag) {
+  if (arguments.length !== 1 || Array.isArray(tag)) {
+    return serialize(this, arguments,'untag');
+  };
+  return this.val(function (node) {
+    if (invalid(node)) {  return this; };
+
+    if(node[tag]){// proptag
+      this.get(tag).put(false);
+    } else{
+      this.get('tags').get(tag).put(0);
+    }
+
+  });
+};
+
+/* --------------- tagged ------------------- 
+    gun.tagged().val(cb) -> get all tags
+    gun.tagged('TAG1',eachCb,endCb) ->  get all - valid nodes from 'TAG1'
+    gun.tagged('books/fantasy',eachCb,endCb)
+*/
+
+  Gun.chain.tagged = function(tag,eachCb,endCb) {
+    
+    // gun.tagged().val(cb)
+    if(arguments.length === 0) {
+      return this.get(_scope + 'TAGS');
+    };
+
+    // gun.tagged(eachCb,endCb)  OR gun.tagged({},eachCb,endCb)
+    if(!tag || typeof tag !== 'string') {
+      return this;
+    };
+
+    // gun.tagged('developers')
+    if(arguments.length ===1) {
+
+      if(typeof tag == 'string'){
+
+         if(SCOPES[tag]) { 
+            return this.back(-1).get(tag + '/TAGS');
+         };
+
+        // gun.tagged('books/fantasy')
+         if(tag.includes('/')) { 
+          return this.back(-1).get(tag);
+        } 
+
+        // gun.tagged('developers')
+         else { 
+          return this.back(-1).get(_scope+tag);
+        };
+      } else {return this;}
+    };
+
+    // gun.tagged('books/fanatsy',eachCb,endCb)
+    if(arguments.length > 1){
+      var gun = this;
+      var __scope = null;
+      var __tag=null;
+      var __scoped = false;
+      var each = typeof arguments[1] == 'function' ? arguments[1] : function(node){};
+      var end =  typeof arguments[2] == 'function' ? arguments[2] : false;
+     
+     // eg. gun.tagged('developers',eachCb,endCb)
+        if(!tag.includes('/') && !SCOPES[tag]){  
+         __scoped=false;
+         __scope=null;
+         __tag=null;   
+         gun.get(_scope+tag).tagMapEnd(each,end);
+        };
+
+        // scoped eg gun.tagged('books',eachCb,endCb)
+        // NOTE: Will return ALL nodes under ALL tags of BOOKS -> Books.fantasy , Books.travel  etc
+        // we do NOT want to do this!!
+        if(!tag.includes('/') && SCOPES[tag]) { 
+          console.warn('Asking for a scope without tag would return every node under "%s"\n this is not implemented!',tag);
+          return gun;
+        };
+
+        // scoped eg gun.tagged('BOOKS/fantasy',eachCb,endCb)
+        if(tag.includes('/') && SCOPES[tag.split('/')[0]]){ 
+          __scoped=true;
+          __scope=tag.split('/')[0];
+          __tag=tag.split('/')[1]
+
+          gun.get(tag)
+            .not(function(){
+              // if the 'end' callback returns 'not' the scoped tag does not exists
+              // born Of necessity
+              each('not')
+            })
+            .tagMapEnd(each,end);
+        }
+    }
+  };
+ /*
+      gun.íntersect(['programmer','photographer'],eachCb,endCb) 
+      Intersect should load all nodes that are tagged to both
+      aka we only need to look at one of the tags and go through the nodes 
+      to see if it also has the other(s) ;p
+   */
+  Gun.chain.intersect=function(tags,eachCb,endCb){
+    var gun = this;
+    if(!Array.isArray(tags)){
+      console.warn('intersect needs an array with at least two existing tags');
+      return this;
+    } 
+
+    if(arguments.length > 1){
+      var gun = this;
+      var count = 0;
+      var each = typeof arguments[1] == 'function' ? arguments[1] : function(node){};
+      var end =  typeof arguments[2] == 'function' ? arguments[2] : false;
+      // we only have to look at one tag because the node has to have them all anyway
+      gun.tagged(tags[0],function(node){
+        count=0;
+        for (var t in tags) {
+          if(node.taglist.includes(tags[t])){
+            count++;
+            if(count == tags.length){break;}
+          }
+        }
+        if(count == tags.length){
+          each(node)
+        }
+        
+      })
+    }
+  };
+/*
+    works the same as 'valMapEnd' but this will add the tags
+    to the returned node as 'taglist'.
+*/
+  Gun.chain.tagMapEnd = function (cb, end) {
+    var n = function () {},
+    count = 0,
+    souls = [],
+    gun = this,
+    orgSoul = gun._.soul,
+    cb = cb || n,
+    end = end || n,
+    a_tags=[]
+
+    gun.val(function (list) {
+      var args = Array.prototype.slice.call(arguments);
+      Gun.node.is(list, function (n, soul) {
+       /* TODO: Bug: somehow, somewhere the scope/tag is set as node
+                resulting in a soul: '#'
+       */
+        if(soul !== '#') {
+           count += 1;
+         souls.push(soul);
+       }
+      });
+
+      function returnCb(g_tm,args,soul){
+        count -= 1;
+        
+        // orgSoul will be scope/tag or 'guntagger/tag'
+        if(args[0].taglist.includes(orgSoul) || args[0].taglist.includes(orgSoul.split('/')[1]) ||  args[0][orgSoul]==true || arguments[0][orgSoul.split('/')[1]]==true ){
+          cb.apply(g_tm, args);
+        };
+        if (!count) {end.apply(g_tm, args);} ;
+      };
+      souls.forEach(function (soul) {   
+       gun.back(-1).get(soul).val(function(tagmember,key){
+          if(!tagmember) { console.warn(soul) }
+          var g_tm = this;
+          g_tm.get('tags').val(tags => {
+            a_tags=[];
+     
+            // only get valid tags
+            if(typeof tags =='object') { 
+              Object.keys(tags).forEach(tag => { 
+                if(tags[tag] == 1){ a_tags.push(tag) } 
+              });
+           } else {
+            console.warn ('tags is not an object on ',key)
+            console.log(tags)
+           }
+            tagmember.taglist = a_tags;
+            returnCb(g_tm,arguments,key)
+          });
+        }); 
+      });
+    }); 
+    return gun;
+  };
+
+  Gun.chain.tagfilter=function(tag,filterBy,query,cb){
+  if(filterBy){
+    var gun = this;
+    var nodes = []
+    var filters = filterBy.split(',');
+    var unique = {}
+
+    function fn_filter(node,tags){
+      if(query=="*"){
+        nodes.push(node)
+      } else {
+        filters.forEach(function(fby){
+          // make sure we have no doubles !
+          if(node[fby] && node[fby].toLowerCase().includes([query.toLowerCase()]) ){
+            if(!unique[node._['#']]){
+              nodes.push(node);
+              unique[node._['#']] = true;
+            };
+          };
+        });
+      };
+    };
+    function fn_end(){
+      cb(nodes)
+    };
+      gun.tagged(tag,fn_filter,fn_end)
+    };
+};
+
+Gun.chain.valMapEnd = function (cb, end) {
+    var n = function () {},
+    count = 0,
+    souls = [],
+    gun = this;
+    cb = cb || n;
+    end = end || n;
+
+    gun.val(function (list) {
+      var args = Array.prototype.slice.call(arguments);
+      Gun.node.is(list, function (n, soul) {
+        count += 1;
+        souls.push(soul);
+      });
+     // console.log(souls)
+      souls.forEach(function (soul) {   
+        gun.back(-1).get(soul).val(function (val, key) {
+          count -= 1;
+          cb.apply(this, arguments);
+          if (!count) {end.apply(this, args);}
+        });
+      });
+    });
+    return gun;
+  };
+
+  Gun.chain.each = function () {
+    var each = this.map();
+    return this.val.apply(each, arguments)
+  };
+
+  Gun.chain.path = function(field, cb, opt){
+  var back = this, gun = back, tmp;
+  opt = opt || {}; opt.path = true;
+  if(gun === gun._.root){if(cb){cb({err: Gun.log("Can't do that on root instance.")})}return gun}
+  if(typeof field === 'string'){
+    tmp = field.split(opt.split || '.');
+    if(1 === tmp.length){
+      gun = back.get(field, cb, opt);
+      gun._.opt = opt;
+      return gun;
+    }
+    field = tmp;
+  }
+  if(field instanceof Array){
+    if(field.length > 1){
+      gun = back;
+      var i = 0, l = field.length;
+      for(i; i < l; i++){
+        gun = gun.get(field[i], (i+1 === l)? cb : null, opt);
+      }
+      //gun.back = back; // TODO: API change!
+    } else {
+      gun = back.get(field[0], cb, opt);
+    }
+    gun._.opt = opt;
+    return gun;
+  }
+  if(!field && 0 != field){
+    return back;
+  }
+  gun = back.get(''+field, cb, opt);
+  gun._.opt = opt;
+  return gun;
+}
+
+}
+
+})()  
+
+
+  /**
+   * ### Note
+   * You do NOT have to install `gun-ui-mixin` yourself. It will be included when 
+   * you install any of the GunUi elements.
+   *
+   * Full docs on https://stefdv.github.io/gun-ui-mixin/components/gun-ui-mixin/
+   * @polymerBehavior gun-ui-mixin
+   * @demo demo/index.html
+   */
+      Polymer.GunUiMixin = {
+      properties: {
+        soul          : { type:String,  value:null},
+        prop          : { type:String,  value:null     },
+        path          : { type:String,  value:null     },
+        subscribe     : { type:Boolean, value:false    },
+
+      },
+      created:function(){
+        if(typeof Gun === 'undefined') { console.warn('Gun is not defined') };
+        if(gun instanceof Gun == false){
+           if(typeof gun_options == 'object' && !Array.isArray(gun_options)) {
+            gun= this.gun= Gun(gun_options);
+          } else {
+            gun = this.gun =  Gun();
+          };
+       } else {
+         console.log('gun already defined')
+         this.gun = gun
+       }
+       
+      },
+      attached(){
+       // this.gun = gun
+      },
+
+      /**
+       * @param  {Object} args `{soul:'mySoul',data:{name:'test'}`
+       */
+      _create(args){
+        this.gun.get(args.soul).path(args.prop).put(args.data)
+      },
+      /**
+       * @param  {String} soul The soul of the node you want
+       * @return {Promise}      
+       */
+      _read(args){
+        let path;
+        let target;
+        return new Promise( (resolve,reject)=>{
+          this.gun
+            .get(args.soul)
+            .path(args.prop)
+            .val(data=>{
+                resolve(data)
+            })
+        })
+        
+      },
+      _update(args){
+        this.gun.get(args.soul).path(args.prop).put(args.data)
+      },
+      /** 
+       * Not really...but we untag
+       */
+      _untag(soul,from){
+
+      },
+      _tag(soul,to){
+
+      },
+      
+      _on(args,cb){
+        this.gun.get(args.soul).path(args.prop).on(cb)
+      }
+    }
+
+  </script>

@@ -1,0 +1,243 @@
+<!--
+just a nice led
+
+colors available: red, orange, yellow, green, blue and null
+@demo demo/index.html 
+-->
+<link rel="import" href="../polymer/polymer.html">
+<dom-module id="gun-ui-led">
+	<template>
+		<style>
+			:host {
+				display: block;
+			}
+
+.led {
+    width: var(--led-size,10px);
+    height: var(--led-size,10px);
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.25);
+    box-shadow: #000 0 -1px 6px 1px;
+    transition: all 300ms ease-in-out;
+}
+.white { 
+    background-color: white;
+    box-shadow: #0c0c0c 0 -1px 6px 1px, inset #9e9e9e 0 -1px 8px, #ffffff 0 1px 11px;
+  }
+.white.blink {animation:blinkWhite 1s infinite;}
+.red { 
+    background-color: #F00;
+    box-shadow: #000 0 -1px 6px 1px, inset #600 0 -1px 8px, #F00 0 1px 11px;
+  }
+.red.blink{animation:blinkRed 1s infinite;}
+.orange {
+  background-color: #ff9c1b;
+  box-shadow: #000 0 -1px 6px 1px, inset #630 0 -1px 8px, rgb(255, 141, 0) 0 1px 11px;
+}
+.orange.blink{animation:blinkOrange 1s infinite;}
+.yellow {
+    background-color: #FF0;
+    box-shadow: #000 0 -1px 6px 1px, inset #660 0 -1px 8px, #FF0 0 1px 11px;
+}
+.yellow.blink { animation:blinkYellow 1s infinite;}
+.green {
+  background-color: #80FF00;
+  box-shadow: #000 0 -1px 6px 1px, inset #460 0 -1px 8px, #80FF00 0 1px 11px;
+}
+.green.blink { animation:blinkGreen 1s infinite;}
+.blue {
+  background-color: #2fd3e4;
+  box-shadow: #000 0 -1px 6px 1px, inset #02272f 0 -1px 8px, #00bec1 0 1px 11px;
+}
+.blue.blink { animation:blinkBlue 1s infinite;}
+@-webkit-keyframes blinkWhite {
+    from { background-color: white;}
+    50% { background-color: rgb(113, 111, 111);}
+    to { background-color: white; }
+}
+@-moz-keyframes blinkWhite {
+    from { background-color: #FFF; }
+    50% { background-color: rgb(113, 111, 111);}
+    to { background-color: #FFF; }
+}
+@-ms-keyframes blinkWhite {
+    from { background-color: #FFF; }
+    50% { background-color:rgb(113, 111, 111);}
+    to { background-color: #FFF; }
+}
+@-o-keyframes blinkWhite {
+    from { background-color: #FFF; }
+    50% { background-color: rgb(113, 111, 111);}
+    to { background-color: #FFF; }
+}
+@keyframes blinkWhite {
+    from { background-color: #FFF; }
+    50% { background-color: rgb(113, 111, 111);}
+    to { background-color: #FFF; }
+}
+
+
+@-webkit-keyframes blinkGreen {
+    from { background-color: #80FF00;}
+    50% { background-color: #547908;}
+    to { background-color: #80FF00; }
+}
+@-moz-keyframes blinkGreen {
+    from { background-color: #80FF00;}
+    50% { background-color: #547908;}
+    to { background-color: #80FF00; }
+}
+@-ms-keyframes blinkGreen {
+    from { background-color: #80FF00;}
+    50% { background-color: #547908;}
+    to { background-color: #80FF00; }
+}
+@-o-keyframes blinkGreen {
+     from { background-color: #80FF00;}
+    50% { background-color: #547908;}
+    to { background-color: #80FF00; }
+}
+@keyframes blinkGreen {
+     from { background-color: #80FF00;}
+    50% { background-color: #547908;}
+    to { background-color: #80FF00; }
+}
+
+
+@-webkit-keyframes blinkRed {
+    from { background-color: #F00; }
+    50% { background-color: #A00}
+    to { background-color: #F00; }
+}
+@-moz-keyframes blinkRed {
+    from { background-color: #F00; }
+    50% { background-color: #A00;}
+    to { background-color: #F00; }
+}
+@-ms-keyframes blinkRed {
+    from { background-color: #F00; }
+    50% { background-color: #A00;}
+    to { background-color: #F00; }
+}
+@-o-keyframes blinkRed {
+    from { background-color: #F00; }
+    50% { background-color: #A00;}
+    to { background-color: #F00; }
+}
+@keyframes blinkRed {
+    from { background-color: #F00; }
+    50% { background-color: #A00; }
+    to { background-color: #F00; }
+}
+
+@-webkit-keyframes blinkOrange {
+    from { background-color: #ff9c1b; }
+    50% { background-color: #A00}
+    to { background-color: #ff9c1b; }
+}
+@-moz-keyframes blinkOrange {
+    from { background-color: #ff9c1b; }
+    50% { background-color: #A00;}
+    to { background-color: #ff9c1b; }
+}
+@-ms-keyframes blinkOrange {
+    from { background-color: #ff9c1b; }
+    50% { background-color: #A00;}
+    to { background-color: #ff9c1b; }
+}
+@-o-keyframes blinkOrange {
+    from { background-color: #ff9c1b; }
+    50% { background-color: #A00;}
+    to { background-color: #ff9c1b; }
+}
+@keyframes blinkOrange {
+    from { background-color: #ff9c1b; }
+    50% { background-color: #A00; }
+    to { background-color: #ff9c1b; }
+}
+
+@-webkit-keyframes blinkYellow {
+    from { background-color: #FF0;}
+    50% { background-color: #7b7b00;}
+    to { background-color: #FF0; }
+}
+@-moz-keyframes blinkYellow {
+    from { background-color: #FF0; }
+    50% { background-color: #7b7b00;}
+    to { background-color: #FF0; }
+}
+@-ms-keyframes blinkYellow {
+    from { background-color: #FF0; }
+    50% { background-color: #7b7b00;}
+    to { background-color: #FF0; }
+}
+@-o-keyframes blinkYellow {
+    from { background-color: #FF0; }
+    50% { background-color: #7b7b00;}
+    to { background-color: #FF0; }
+}
+@keyframes blinkYellow {
+    from { background-color: #FF0; }
+    50% { background-color: #7b7b00;}
+    to { background-color: #FF0; }
+}
+
+@-webkit-keyframes blinkBlue {
+    from { background-color: #2fd3e4;}
+    50% { background-color: #257982;}
+    to { background-color: #2fd3e4; }
+}
+@-moz-keyframes blinkBlue {
+    from { background-color: #2fd3e4; }
+    50% { background-color: #257982;}
+    to { background-color: #2fd3e4; }
+}
+@-ms-keyframes blinkBlue {
+    from { background-color: #2fd3e4; }
+    50% { background-color: #257982;}
+    to { background-color: #2fd3e4; }
+}
+@-o-keyframes blinkBlue {
+    from { background-color: #2fd3e4; }
+    50% { background-color: #257982;}
+    to { background-color: #2fd3e4; }
+}
+@keyframes blinkBlue {
+    from { background-color: #2fd3e4; }
+    50% { background-color: #257982;}
+    to { background-color: #2fd3e4; }
+}
+
+
+		</style>
+    <div id="led" class$="led {{color}}"></div>
+	</template>
+	<script>
+		Polymer({
+			is: 'gun-ui-led',
+
+			properties: {
+        /**
+         * white,red, orange, yellow, green blue
+         * @type {String} 
+         */
+				color: {type: String,value:'white',observer:'_colorChanged'},
+
+        /**
+         * blinks the led infinite with 1s interval
+         * @type {Boolean}
+         */
+        blink:{type:Boolean,value:false,observer:'_changeBlink'}
+			},
+      _colorChanged(n,o){
+        if(n){
+          this.$.led.classList.remove(o);
+          this.$.led.classList.add(n)
+        }
+      },
+      _changeBlink(n,o){
+        this.blink ? this.$.led.classList.add('blink') : this.$.led.classList.remove('blink') 
+      }
+		});
+	</script>
+</dom-module>
