@@ -1,0 +1,324 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../gun-ui-mixin/gun-ui-mixin.html">
+<link rel="import" href="../gun-ui-led/gun-ui-led.html">
+
+<!--
+`gun-ui-toggle3`
+Part of the GunUi elements
+
+@demo demo/index.html
+-->
+
+<dom-module id="gun-ui-toggle3">
+  <template>
+   <style is="custom-style">
+      
+      :host {
+        display: block; 
+        width:90px;
+        cursor:pointer;
+      }
+      .switch {
+        position: relative;
+        display: block;
+        padding: 0 !important;
+        background-color: var(--button-background-color,whitesmoke);
+        background: var(--button-background);
+        border-radius: 3px;
+        @apply(--shadow-elevation-2dp);
+        text-transform: uppercase; 
+      }
+      .switch::after {clear: both; content: "";display: table;}
+      .switch *, 
+      .switch *:before, 
+      .switch *:after { box-sizing: border-box;  }
+      .colorbar {top: 1px}
+       #approve,#rejected {padding: 7px; }
+       iron-icon { color: var(--button-icon-color,black);}
+       .ledwrap {
+          color: var(--button-icon-color,black);
+        }
+       iron-icon,
+       gun-ui-button,
+       .ledWrap {
+          position: relative;
+          z-index: 2; 
+          display: block; 
+          float: left;
+          width:33.33%;
+          margin: 0;
+          text-align: center;
+          height: 30px;
+          @apply(--layout-vertical);
+          @apply(--layout-center-justified); 
+          @apply(--layout-center);}
+        #colorbar{
+          display: block;
+          position: absolute;
+          top: 1px;
+          left: 0;
+          padding: 0;
+          z-index: 1;
+          width: 33.33%;
+          height: 100%;
+          border-radius: 5px; 
+          box-shadow: inset rgba(255, 255, 255, 0.2) 0 1px 0,inset rgba(0, 0, 0, 0.3) 0 -1px 0;
+          -webkit-transition: all 0.2s ease-out; 
+          -moz-transition: all 0.2s ease-out; 
+          transition: all 0.2s ease-out;
+        }
+        .ledWrap{font-size: 85%;line-height: 2.15625em;line-height: 2em;vertical-align: middle;}
+
+        @media only screen and (-webkit-max-device-pixel-ratio: 2) and (max-device-width: 80em) {
+          .switch { -webkit-animation: webkitSiblingBugfix infinite 1s; } 
+        }
+        @-webkit-keyframes webkitSiblingBugfix {
+           from { -webkit-transform: translate3d(0, 0, 0); }
+           to {-webkit-transform: translate3d(0, 0, 0); }
+        }
+        gun-ui-led {
+          --led-size:var(--toggle3-led-size,12px);
+        }
+      .led {
+        
+        border-radius: 50%;background-color: rgba(255, 255, 255, 0.25);box-shadow: #000 0 -1px 6px 1px;transition: all 300ms ease-in-out;}
+      .led.off {background-color: rgba(255, 255, 255, 0.25);box-shadow: #000 0 -1px 6px 1px;}
+      .led.rejected {background-color: #f00;box-shadow: #212121 0 -1px 6px 1px, inset #ec1717 0 -1px 6px, #F00 0 3px 11px;}
+      .led.intend {background-color: #FF0; box-shadow: #000 0 -1px 6px 1px, inset #660 0 -1px 6px, #FF0 0 3px 11px;}
+      .led.approved { background-color: #80FF00;box-shadow: #000 0 -1px 6px 1px, inset #460 0 -1px 6px, #80FF00 0 3px 11px;}
+      .colorbar.rejected { background-color: rgb(255, 0, 0);}
+      .colorbar.intend {background-color: rgba(255, 238, 5, 0.5);}
+      .colorbar.approved{background-color: rgba(112, 215, 0, 0.5);}
+      .colorbar.off{display:none!important;}
+    </style>
+     <div class="switch">
+      <iron-icon id="approve" icon="check" on-tap="_setApproved"></iron-icon>
+      <div class="ledWrap"  on-tap="_setIntentOrOff">
+      <gun-ui-led id="led" color="[[color]]"></gun-ui-led>
+      </div>
+      <iron-icon id="rejected" icon="clear" on-tap="_setRejected"></iron-icon>
+      <div id="colorbar" class$="colorbar {{status}}"></div>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'gun-ui-toggle3',
+      properties:{
+        /**
+         * only allow certain actions on this button
+         * 
+         * by setting them in a comma seperated string.
+         * 
+         * eg ; 
+         * 
+         * ```allow="approve,reject"``` only allow and reject are allowed
+         * 
+         * `allow="intend"`  only intend is allowed.
+         * 
+         * if you don't set the allow attribute all actions are allowed
+         * @type {String}
+         */
+        allow:{
+          type:String,
+          value:'all'
+        },
+        from:{
+          type:String,value:null
+        },
+        /**
+         * internal to check if a statechange is
+         * a useraction or remote.
+         * @type {Boolean}
+         */
+        _fromGun:{
+          type:Boolean,
+          value:false
+        },
+        /**
+         * complete gun reference to `gun.get(<soul>).path(<prop>)`
+         * @type {Object}
+         */
+        _guntarget:{
+          type:Object,
+          value:function(){
+            return {}
+          }
+        },
+        /**
+         * Represents the state 'intend','approved','rejected'
+         * @type {String}
+         */
+        status: {
+          type: String,
+          value:'off',
+          observer:'_statuschanged',
+          notify:true
+        },
+        log:{type:Boolean,value:false},
+        logName:{type:String,value:'unk'}
+      },
+
+      behaviors: [Polymer.GunUiMixin],
+      detached:function(){this.isDetached=true;},
+      ready:function(){
+        this.subscribe ? this._subscribe() : this._getStatus();},
+  
+      /*
+          only needed when change comes from Gun or observer
+       */
+      _statuschanged:function(newState,oldState){
+        if(!this.isDetached && newState && this._fromGun){
+            this._setStatus(newState,true);
+        }
+      },
+      /*
+          action NOT from Gun or from iron-signals or from button press
+          must be from javascript.
+       */
+      setStatus:function(status){
+        this._setStatus(status,false);
+      },
+      /**
+       *  user action
+       *  
+       *  "approved" ( only when "intend" or "rejected"  is true )
+      */
+      _setApproved:function(e){
+
+          e.stopPropagation();
+           e.preventDefault();
+          if(this._allowApprove() && (this.status=='intend' || this.status=='rejected')){
+            console.log('_setApproved')
+            this._setStatus('approved',false);
+          };  
+      },
+       /*
+          user action
+       */
+      _setIntentOrOff:function(e){
+        e.stopPropagation();
+        if(this._allowIntent()){
+          var status= this.status == 'off' ? 'intend' : this.status == 'intend' ? 'off' : "intend"
+          this._setStatus(status,false)
+        }
+      },
+      /**
+       * user action
+       *  
+       * "rejected" ( only when "intend" or "approved"  is true )
+       */
+      _setRejected:function(e){
+         e.stopPropagation();
+        if(this._allowReject() && (this.status=='intend' || this.status=='approved') ){
+          this._setStatus('rejected',false);
+        };
+      },
+     
+      /**
+       * subscribe to the provided soul.prop
+       */
+      _subscribe:function(){
+        if(this.soul && this.prop){ 
+          this._on({soul:this.soul,prop:this.prop},(data)=>{
+             this._setStatus(data,true);
+          })
+        }  else {
+          console.warn('You have no soul and/or prop set !!');
+        };
+        
+      },
+      _getStatus:function(){
+        this._read({soul:this.soul,prop:this.prop})
+            .then( (data) => {
+              this._setStatus(data,true);
+            })     
+      },
+      /**
+
+       */
+      _setStatus:function(status,_fromGun){
+        this._fromGun = _fromGun;
+        if(!_fromGun){ 
+
+          // will trigger _statuschanged but 
+          // this._fromGun == false so it ends there.
+          this.status = status;
+
+
+          // will trigger the subscribe -> _fromGun == true -> _setStatus() -> _adjustToggle()
+          // or through gun-ui-observer -> iron-signal -> _handleState() -> _setStatus() -> _adjustToggle()
+          this._updateRequest(status);
+          if(!this.subscribe){
+            // if we are not subscribed, the colorbar won't move
+            // the only way we can change it then is if we have a 'gun-ui-signal'
+
+          }
+         
+        }else {
+          if(this.status !== status){
+            // will trigger _statuschanged but 
+            // fromGun == true and this.request == request
+            // so it end in the 'else' below
+            this.status = status;
+          } else {
+            // coming back from '_statuschanged'
+            this._adjustToggle(status);
+          }
+        }
+      },
+      /**
+       * updating in gun will trigger this subscribe callback
+       * but fromGun will be true so it goes straight to _adjustToggle()
+       */
+      _updateRequest:function(status){
+ 
+        var status = status || this.status
+        if(status && this.soul && this.prop) {
+          this._update({soul:this.soul,prop:this.prop,data:status})
+          // also create log ?
+          if(this.log){
+            var logProp = +new Date()+':'+ this.from +'_'+this.soul+'_'+this.prop;
+            var msg = 'changed to ' + status
+            this._update({soul:this.logName,prop:logProp,data:msg})
+          }
+          
+        };
+      },
+      _handleStateChange:function(e,detail){
+
+        if(detail.soul == this.soul){
+          // detail.soul: 1333-E0001
+          // detail.prop: intend
+          if(this.prop == detail.soul + '.' + detail.prop){
+           this._setStatus(detail.value,true)
+          } 
+             
+        }
+        
+      },
+      _adjustToggle:function(status){
+        //this.$.led.setColor(status)
+        this._moveColorBar(status)
+      },
+      _moveColorBar:function(status){
+        console.log('_moveColorBar ',status)
+        this.$.colorbar.style.left = status == 'approved' ? '0%' : status == 'rejected' ? '66.66%' : '33.33%';
+        this.color = status== 'off' ? 'off': "yellow"//status == 'approved' ? 'green' : status == 'rejected' ? 'red' : 'off' ? 'off' : 'yellow';
+       // this.$.rejected.style.color = status == 'rejected' ? 'white' : 'black'
+      },
+      _allowApprove:function(){
+        return this.allow.includes('approve') || this.allow.includes('all')
+      },
+      _allowIntent:function(){
+        return this.allow.includes('intend') || this.allow.includes('all')
+      },
+      _allowReject:function(){
+        return this.allow.includes('reject') || this.allow.includes('all')
+      },
+      
+    });
+  </script>
+</dom-module>

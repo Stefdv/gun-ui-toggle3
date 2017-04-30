@@ -1,5 +1,7 @@
 # Logs
 logs
+bower_components
+
 *.log
 npm-debug.log*
 

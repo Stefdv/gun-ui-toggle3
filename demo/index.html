@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <script src="https://rawgit.com/amark/gun/master/gun.min.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>gun-ui-toggle3</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script>
+      window.Polymer = window.Polymer || {};
+      window.Polymer.dom = 'shadow';
+      localStorage.clear()
+    </script>
+    <link rel="import" href="../../polymer/polymer.html">
+    <link rel="import" href="../../gunui-demo-app/gunui-demo-app.html">
+    <link rel="import" href="../../gunui-demo-app/demo/demo-imports.html">
+    <link rel="import" href="../gun-ui-toggle3.html">
+
+    <style is="custom-style" include="demo-shared-styles">
+          :root{ }
+          body{
+            overflow:hidden;
+          }
+          .todo {
+            border-left: 5px solid rgba(255, 0, 0, 0.54);
+          }
+          .todo span{
+            color: #ff7575;
+            font-weight: 600;
+          }
+    </style>
+    <link rel="import" href="/polymer/polymer.html">
+    
+    <!--
+    A comment describing this element
+    
+    Example:
+    
+        <my-elem></my-elem>
+    
+    Example:
+    
+        <my-elem>
+          <h2>Hello my-elem</h2>
+        </my-elem>
+    
+    @demo demo/index.html
+    -->
+    
+   
+  </head>
+  <body>
+  <prism-highlighter></prism-highlighter>
+    <style is="custom-style" include="demo-shared-styles">
+      .row > gun-ui-toggle3 {
+        margin:10px;
+      }
+      gun-ui-toggle3 {
+        --toggle3-led-size:14px;
+      }   
+      demo-box.small {
+        min-width:15vw;
+        @apply(--layout-flex);
+      }
+    </style>
+
+     <gunui-demo-app>
+      <!-- create pages -->
+
+       <div class="vertical-section centered" id="start">
+         <h3>What it does</h3>
+         <p>It's a 3-state toggle-button...that syncs with Gun</p>
+         <blockquote>
+          Like many of my elements..this one is also created because i needed it.<br>
+          I guess...<i>Take it or leave it </i>
+         </blockquote>
+         <div class="row">
+          <gun-ui-toggle3 soul="demo" prop="toggle3" subscribe></gun-ui-toggle3>
+          <gun-ui-toggle3 soul="demo" prop="toggle3" subscribe></gun-ui-toggle3>
+        </div>
+        <blockquote>
+           The attributes <span class="attribute">soul</span> and <span class="attribute">prop</span> will link the element to a data-point.<br>
+           The attribute <span class="attribute">subscribe</span> is what makes it 'Gun-aware'
+           you can read more about it <demo-link href="?gunui#gun-awareness">here</demo-link>
+         </blockquote> 
+      </div>
+
+      <div class="vertical-section centered" id="">
+        <div class="demo-header">
+          <h3>Usecase</h3>
+          <blockquote>This element has 3 pre-defined states. 'intend' , 'approve' and 'reject'.</blockquote>
+
+          <p>We have an <i>Engine room</i> and an <i>Equipment room</i>.</p>
+          <p>The <i>Equipment room</i> has equipment that is powered by 'Generator_1' and/or 'Generator_2'.<br>
+          The goal of the <i>Equipment room</i> is to keep all equipment up-and-running.</p>
+          <p>The <i>Engine room</i> needs to give maintanance to the generators, for this they need to shut it down.</p>
+
+          <p>The <i>Engine room</i> sets 'Generator_1' to 'Intend'<br>
+           <b>Engine room - Generator 1 :Press the middle part of the button</b></p>
+          <p>The <i>Equipment room</i> notices the intend and also sees that Generator_2 is still online.He can 'approve'<br><b>Equipment room - Generator 1 :Press the <iron-icon icon="check"></iron-icon> of the button </b></p>
+          <p>The <i>Engine room</i> can shut down Generator_1.</p>
+
+          <p>The <i>Engine room</i> also wants to shut down 'Generator_2' <br>
+          <b>Engine room - Generator 2 :Press the middle part of the button</b></p>
+          <p>The <i>Equipment room</i> notices the intend and also sees that Generator_1 is still offline.He 'rejects'<br><b>Equipment room - Generator 2 :Press the <iron-icon icon="clear"></iron-icon>button </b></p>
+          <p>The <i>Engine room</i> knows he should not shut down generator 2. He can cancel the intend</p>
+          <b>Engine room - Generator 2 :Press the middle part of the button twice</b></p>
+
+        </div>
+        <demo-box>
+          <template>
+            <div class="row">
+            <fieldset>
+              <legend>Engine room</legend>
+              
+              <fieldset><legend>Generator 1</legend>
+                <gun-ui-toggle3 soul="SomeFactory" prop="generator_1" subscribe from="EngRoom" log log-name="mainLog"></gun-ui-toggle3>
+              </fieldset>
+               <fieldset><legend>Generator 2</legend>
+                <gun-ui-toggle3 soul="SomeFactory" prop="generator_2" subscribe from="EngRoom" log log-name="mainLog"></gun-ui-toggle3>
+              </fieldset>
+              </fieldset>
+
+              <fieldset><legend>Equipment room</legend>
+                <fieldset><legend>Generator</legend>
+                  <gun-ui-toggle3 soul="SomeFactory" prop="generator_1" subscribe from=EquipRoom " log log-name="mainLog"></gun-ui-toggle3>
+                </fieldset>
+                <fieldset><legend>Generator_2</legend>
+                  <gun-ui-toggle3 soul="SomeFactory" prop="generator_2" subscribe from=EquipRoom " log log-name="mainLog"></gun-ui-toggle3>
+                </fieldset>
+
+            </div>
+          </template>
+        </demo-box>
+      </div>
+        <to-do>The led should be 'pressable' to indicate that the action IS actually done...<br>Then to turn it back on a new sequence should be started.
+          </to-do>
+
+       <div class="vertical-section centered" id="">
+       <h3>Yeah but...</h3>
+       <p>I know, for this to work flawless i also need some kind of authorization over the element.It would be strange if the one that 'intends' can also 'approve'...that's useless.</p>
+
+       <p>And luckily we have the <span class="attribute">allow</span> attribute.<br>
+       <span class="attribute">allow</span> accepts a comma-separated String to set the allowed actions on that button. eg: <prism-demo inline code='<gun-ui-toggle3 allow="approve,reject">' lang="html"></prism-demo></p>
+      <p>If you don't set <span class="attribute">allow</span> all actions are allowed.<br>The ones you can set are "Intend", "approve" and "reject".</p>
+      <blockquote>
+        You can only activate 'approve' or 'reject' if there IS an 'intend'
+      </blockquote>
+      <div class="row">
+        <demo-box class="small">
+         <div class="demo-header"><h3>Intend</h3></div>
+          <template>
+              <gun-ui-toggle3 allow="intend" soul="demo" prop="toggle3" subscribe></gun-ui-toggle3>
+          </template>
+        </demo-box>
+        <demo-box class="small">
+         <div class="demo-header"><h3>approve,reject</h3></div>
+          <template>
+              <gun-ui-toggle3 allow="approve,reject" soul="demo" prop="toggle3" subscribe></gun-ui-toggle3>
+          </template>
+        </demo-box>
+       </div>
+     </div> 
+      <div class="vertical-section centered" id="">
+      <h3>To be Continued...</h3>
+      </div>
+
+
+    </gunui-demo-app>
+  </body>
+ </html>
