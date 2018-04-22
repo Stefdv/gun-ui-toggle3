@@ -1,3 +1,4 @@
+# Deprecated!
 # \<gun-ui-toggle3\>
 
 Part of the GunUi elements
